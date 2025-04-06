@@ -54,7 +54,8 @@ fun MyAppDrawer(
         DrawerItem("Home", "home"),
         DrawerItem("Profile", "profile"),
         DrawerItem("Settings", "settings"),
-        DrawerItem("Calc", "calc")
+        DrawerItem("Calc", "calc"),
+        DrawerItem("qr","qr")
     )
     var selectedItem by remember { mutableStateOf("home") }
     // Drawer con navegación

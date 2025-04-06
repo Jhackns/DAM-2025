@@ -19,6 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import pe.edu.upeu.navigationjpc.ui.presentation.component.BarcodeScanningAnalyzer
+import pe.edu.upeu.navigationjpc.ui.presentation.screens.BarcodeScanningScreen
 import pe.edu.upeu.navigationjpc.ui.presentation.screens.CalcUPeU
 import pe.edu.upeu.navigationjpc.ui.presentation.screens.HomeScreen
 import pe.edu.upeu.navigationjpc.ui.presentation.screens.ProfileScreen
@@ -70,6 +72,7 @@ fun NavigationHost(navController: NavHostController) {
         composable("profile") { ProfileScreen() }
         composable("settings") { SettingsScreen() }
         composable("calc") {CalcUPeU() }
+        composable("qr") { BarcodeScanningScreen(navController) }
 
 
     }
