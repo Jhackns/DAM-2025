@@ -2,6 +2,7 @@ package pe.edu.upeu.sysventasjpc.ui.presentation.screens.producto
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -51,6 +53,9 @@ fun ProductoForm(
 ) {
     val producto by viewModel.producto.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val operationSuccess by viewModel.operationSuccess.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val context = LocalContext.current
 
     val marcas by viewModel.marcs.collectAsState()
     val categorias by viewModel.categors.collectAsState()
@@ -58,6 +63,25 @@ fun ProductoForm(
 
     LaunchedEffect(Unit) {
         viewModel.getDatosPrevios()
+    }
+
+    LaunchedEffect(operationSuccess) {
+        operationSuccess?.let { success ->
+            if (success) {
+                Toast.makeText(context, "Operación realizada con éxito", Toast.LENGTH_SHORT).show()
+                navController.navigate(Destinations.ProductoMainSC.route) {
+                    popUpTo(Destinations.ProductoMainSC.route) { inclusive = true }
+                }
+            }
+            viewModel.clearOperationResult()
+        }
+    }
+
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            viewModel.clearOperationResult()
+        }
     }
 
     var productoD: ProductoDto

@@ -1,5 +1,6 @@
 package pe.edu.upeu.sysventasjpc.repository
 
+import android.util.Log
 import pe.edu.upeu.sysventasjpc.data.remote.RestProducto
 import pe.edu.upeu.sysventasjpc.modelo.ProductoDto
 import pe.edu.upeu.sysventasjpc.modelo.ProductoResp
@@ -8,8 +9,8 @@ import javax.inject.Inject
 
 interface ProductoRepository {
     suspend fun deleteProducto(producto: ProductoDto): Boolean
-    suspend fun reportarProductos(): List<ProductoResp> // Cambiado
-    suspend fun buscarProductoId(id: Long): ProductoResp // Cambiado
+    suspend fun reportarProductos(): List<ProductoResp>
+    suspend fun buscarProductoId(id: Long): ProductoResp
     suspend fun insertarProducto(producto: ProductoDto): Boolean
     suspend fun modificarProducto(producto: ProductoDto): Boolean
 }
@@ -20,27 +21,61 @@ class ProductoRepositoryImp @Inject constructor(
 ) : ProductoRepository {
 
     override suspend fun deleteProducto(producto: ProductoDto): Boolean {
-        val response = restProducto.deleteProducto(TokenUtils.TOKEN_CONTENT, producto.idProducto)
-        return response.isSuccessful && response.body()?.message == "true"
+        return try {
+            val response = restProducto.deleteProducto(TokenUtils.TOKEN_CONTENT, producto.idProducto)
+            response.isSuccessful
+        } catch (e: Exception) {
+            Log.e("ProductoRepository", "Error al eliminar producto", e)
+            false
+        }
     }
 
     override suspend fun reportarProductos(): List<ProductoResp> {
-        val response = restProducto.reportarProducto(TokenUtils.TOKEN_CONTENT)
-        return if (response.isSuccessful) response.body() ?: emptyList() else emptyList()
+        return try {
+            val response = restProducto.reportarProducto(TokenUtils.TOKEN_CONTENT)
+            if (response.isSuccessful) {
+                response.body() ?: emptyList()
+            } else {
+                Log.e("ProductoRepository", "Error al obtener productos: ${response.code()}")
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e("ProductoRepository", "Error al obtener productos", e)
+            emptyList()
+        }
     }
 
     override suspend fun buscarProductoId(id: Long): ProductoResp {
-        val response = restProducto.getProductoId(TokenUtils.TOKEN_CONTENT, id)
-        return response.body() ?: throw Exception("Producto no encontrado")
+        return try {
+            val response = restProducto.getProductoId(TokenUtils.TOKEN_CONTENT, id)
+            if (response.isSuccessful) {
+                response.body() ?: throw Exception("Producto no encontrado")
+            } else {
+                throw Exception("Error al buscar producto: ${response.code()}")
+            }
+        } catch (e: Exception) {
+            Log.e("ProductoRepository", "Error al buscar producto", e)
+            throw e
+        }
     }
 
     override suspend fun insertarProducto(producto: ProductoDto): Boolean {
-        val response = restProducto.insertarProducto(TokenUtils.TOKEN_CONTENT, producto)
-        return response.isSuccessful && response.body()?.message == "true"
+        return try {
+            val response = restProducto.insertarProducto(TokenUtils.TOKEN_CONTENT, producto)
+            response.isSuccessful
+        } catch (e: Exception) {
+            Log.e("ProductoRepository", "Error al insertar producto", e)
+            false
+        }
     }
 
     override suspend fun modificarProducto(producto: ProductoDto): Boolean {
-        val response = restProducto.actualizarProducto(TokenUtils.TOKEN_CONTENT, producto.idProducto, producto)
-        return response.isSuccessful && response.body()?.idProducto != null
+        return try {
+            val response = restProducto.actualizarProducto(TokenUtils.TOKEN_CONTENT, producto.idProducto, producto)
+            response.isSuccessful
+        } catch (e: Exception) {
+            Log.e("ProductoRepository", "Error al modificar producto", e)
+            false
+        }
     }
 }

@@ -21,14 +21,14 @@ interface RestProducto {
                               token:String, @Path("id") id:Long): Response<ProductoResp>
     @DELETE("${BASE_PROD}/{id}")
     suspend fun deleteProducto(@Header("Authorization")
-                               token:String, @Path("id") id:Long): Response<MessageResponse>
+                               token:String, @Path("id") id:Long): Response<Unit>
     @PUT("${BASE_PROD}/{id}")
     suspend fun actualizarProducto(@Header("Authorization")
                                    token:String, @Path("id") id:Long, @Body producto:
                                    ProductoDto): Response<ProductoResp>
     @POST("${BASE_PROD}")
     suspend fun insertarProducto(@Header("Authorization")
-                                 token:String, @Body producto: ProductoDto): Response<MessageResponse>
+                                 token:String, @Body producto: ProductoDto): Response<Unit>
     companion object {
         const val BASE_PROD = "/productos"
     }

@@ -15,32 +15,43 @@ import pe.edu.upeu.sysventasjpc.repository.ProductoRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class ProductoMainViewModel  @Inject constructor(
+class ProductoMainViewModel @Inject constructor(
     private val prodRepo: ProductoRepository,
-): ViewModel() {
+) : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> get() = _isLoading
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _deleteSuccess = MutableStateFlow<Boolean?>(null)
-    val deleteSuccess: StateFlow<Boolean?> get() = _deleteSuccess
+    val deleteSuccess: StateFlow<Boolean?> = _deleteSuccess
 
     private val _prods = MutableStateFlow<List<ProductoResp>>(emptyList())
     val prods: StateFlow<List<ProductoResp>> = _prods
 
-    /*init {
+    init {
         cargarProductos()
-    }*/
+    }
 
     fun cargarProductos() {
         viewModelScope.launch {
             _isLoading.value = true
-            _prods.value = prodRepo.reportarProductos()
-            _isLoading.value = false
+            try {
+                val productos = prodRepo.reportarProductos()
+                _prods.value = productos
+            } catch (e: Exception) {
+                Log.e("ProductoMainVM", "Error al cargar productos", e)
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
     fun buscarPorId(id: Long): Flow<ProductoResp> = flow {
-        emit(prodRepo.buscarProductoId(id))
+        try {
+            emit(prodRepo.buscarProductoId(id))
+        } catch (e: Exception) {
+            Log.e("ProductoMainVM", "Error al buscar producto por ID", e)
+            throw e
+        }
     }
 
     fun eliminar(producto: ProductoDto) = viewModelScope.launch {
@@ -48,14 +59,17 @@ class ProductoMainViewModel  @Inject constructor(
         try {
             val success = prodRepo.deleteProducto(producto)
             if (success) {
-                //eliminarProductoDeLista(producto.idProducto)
+                // Recargar la lista después de eliminar
                 cargarProductos()
-                _deleteSuccess.value = success
-                _isLoading.value = false
-            }else{ _deleteSuccess.value = false }
+                _deleteSuccess.value = true
+            } else {
+                _deleteSuccess.value = false
+            }
         } catch (e: Exception) {
-            Log.e("ProductoVM", "Error al eliminar producto", e)
+            Log.e("ProductoMainVM", "Error al eliminar producto", e)
             _deleteSuccess.value = false
+        } finally {
+            _isLoading.value = false
         }
     }
 
